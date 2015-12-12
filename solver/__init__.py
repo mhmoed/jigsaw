@@ -14,29 +14,10 @@ import matplotlib.pyplot as plt
 
 NUM_CONSTRAINTS = 2
 MATCH_REJECTION_THRESHOLD = 10e-5
-MGC_NUM_ROTATIONS = {
-    0: 3,
-    1: 0,
-    2: 1,
-    3: 2,
-}
+MGC_NUM_ROTATIONS = [3, 0, 1, 2]
 NUM_ORIENTATIONS = len(MGC_NUM_ROTATIONS)
-
-
-DELTA_X = {
-    0: 0,
-    1: -1,
-    2: 0,
-    3: 1
-}
-
-
-DELTA_Y = {
-    0: 1,
-    1: 0,
-    2: -1,
-    3: 0
-}
+DELTA_X = [0, -1, 0, 1]
+DELTA_Y = [1, 0, -1, 0]
 
 
 def mgc(image1, image2, orientation):
@@ -238,9 +219,7 @@ def main():
     random.shuffle(images)
 
     x, y = solve(images, maxiter=15000)
-    plt.imshow(reconstruct(images, x, y))
-    plt.axis('off')
-    plt.show()
+    plt.imsave('/tmp/out.png', reconstruct(images, x, y))
 
 
 if __name__ == '__main__':
