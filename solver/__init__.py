@@ -81,10 +81,7 @@ def mgc(image1, image2, orientation):
 
     g_ij_lr = image2_signed[:, 1] - image1_signed[:, -1]
 
-    total = 0
-    for row in g_ij_lr:
-        total += mahalanobis(row, mu, np.linalg.inv(s))
-    return total
+    return sum(mahalanobis(row, mu, np.linalg.inv(s)) for row in g_ij_lr)
 
 
 def compute_mgc_distances(images, pairwise_matches):
