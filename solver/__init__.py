@@ -1,3 +1,13 @@
+"""
+Implement jigsaw puzzle solver from Yu et al. (2015).
+
+References:
+    Yu, R., Russell, C., & Agapito, L. (2015). Solving Jigsaw Puzzles with
+    Linear Programming. arXiv preprint arXiv:1511.04472.
+    Gallagher, A. C. (2012). Jigsaw puzzles with pieces of unknown
+    orientation. In Computer Vision and Pattern Recognition (CVPR), 2012 IEEE
+    Conference on (pp. 382-389). IEEE.
+"""
 from itertools import product, groupby
 import random
 
@@ -22,10 +32,33 @@ DELTA_Y = [1, 0, -1, 0]
 
 def mgc(image1, image2, orientation):
     """
-    We could use scipy.spatial.distance.cdist to eliminate the for loop at the bottom.
+    Calculate the Mahalanobis Gradient Compatibility (MGC) of image 1 relative
+    to image 2. MGC provides a measure of the similarity in gradient
+    distributions between the boundaries of adjoining images with respect to
+    a particular orientation. For detailed information on the underlying,
+    please see Gallagher et al. (2012).
+
+    Orientations are integers, defined according to Yu et al. (2015):
+    - 0: measure MGC between the top of image 1 and bottom of image 2;
+    - 1: measure MGC between the right of image 1 and left of image 2;
+    - 2: measure MGC between the bottom of image 1 and top of image 2;
+    - 3: measure MGC between the left of image 1 and right of image 2;
+
+    Both images are first rotated into position according to the specified
+    orientations, such that the right side of image 1 and the left side of
+    image 2 are the boundaries of interest. This preprocessing step simplifies
+    the subsequent calculation of the MGC, but increases computation time.
+    Therefore, a straightforward optimisation would be to extract boundary
+    sequences directly.
+
+    NOTE: nomenclature taken from Gallagher et al. (2012).
+
+    :param orientation: orientation image 1 relative to image 2.
+    :param image1: first image.
+    :param image2: second image.
     """
     assert image1.shape == image2.shape, 'images must be of same dimensions'
-    assert orientation in MGC_NUM_ROTATIONS, 'orientation must be 0, 1, 2 or 3'
+    assert orientation in MGC_NUM_ROTATIONS, 'invalid orientation'
 
     num_rotations = MGC_NUM_ROTATIONS[orientation]
 
@@ -38,7 +71,7 @@ def mgc(image1, image2, orientation):
     # Get mean gradient of image1
 
     g_i_l = image1_signed[:, -1] - image1_signed[:, -2]
-    mu = g_i_l.mean(axis = 0)
+    mu = g_i_l.mean(axis=0)
 
     # Get covariance matrix S
 
