@@ -74,6 +74,8 @@ def mgc(image1, image2, orientation):
     mu = g_i_l.mean(axis=0)
 
     # Get covariance matrix S
+    # Small values are added to the diagonal of S to resolve non-invertibility
+    # of S. This will not influence the final result.
 
     s = np.cov(g_i_l.T) + np.eye(3) * 10e-6
 
