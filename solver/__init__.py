@@ -137,18 +137,18 @@ def compute_active_selection(pairwise_matches, mgc_distances):
     match for which the match with this orientation minimises the MGC distance.
 
     For details, see Yu et al. (2015), equation 14.
-    
+
     :param pairwise_matches: list of (image index 1, image index 2, orientation)
      tuples.
     :param mgc_distances: dictionary of (image index 1, image index 2,
     orientation) -> MGC distance items.
     :return:
     """
-    def i_o_sorter((i, j, o)):
+    def i_o_key((i, _, o)):
         return i, o
 
     active_selection = []
-    for (i, o), group in groupby(sorted(pairwise_matches, key=lambda (i, j, o): (i, o)), lambda (i, j, o): (i, o)):
+    for _, group in groupby(sorted(pairwise_matches, key=i_o_key), i_o_key):
         entries = list(group)
         distances = np.array([mgc_distances[entry] for entry in entries])
         lowest_index = np.argmin(distances)
