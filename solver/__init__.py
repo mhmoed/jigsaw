@@ -107,7 +107,8 @@ def compute_weights(pairwise_matches, mgc_distances):
 
     A weight w_ijo is defined according to Yu et al. as the inverse
     ratio between the MGC distance for w_ijo, D_ijo, and the best alternative
-    match for all k =/= i and k =/= j, for this orientation. For details
+    match for all k =/= i and k =/= j, for this orientation. For details, see
+    Yu et al. (2015), equation 1.
 
     :param pairwise_matches: list of (image index 1, image index 2, orientation)
       tuples.
@@ -117,17 +118,13 @@ def compute_weights(pairwise_matches, mgc_distances):
     pairwise_matches, and their weights as values.
     """
     num_images = max((i for i, _, _ in pairwise_matches)) + 1
-    W = {}
+    index_set = frozenset(range(num_images))
+    weights = {}
     for i, j, o in pairwise_matches:
-        min_row, min_column = np.inf, np.inf
-        for k in set(range(num_images)) - {i}:
-            min_row = min(mgc_distances[k, j, o], min_row)
-
-        for k in set(range(num_images)) - {j}:
-            min_column = min(mgc_distances[i, k, o], min_column)
-
-        W[i, j, o] = min(min_row, min_column) / mgc_distances[i, j, o]
-    return W
+        min_row = min(mgc_distances[k, j, o] for k in index_set - {i})
+        min_col = min(mgc_distances[i, k, o] for k in index_set - {j})
+        weights[i, j, o] = min(min_row, min_col) / mgc_distances[i, j, o]
+    return weights
 
 
 def compute_active_selection(pairwise_matches, mgc_distances):
