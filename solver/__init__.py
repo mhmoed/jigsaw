@@ -174,13 +174,24 @@ def initial_pairwise_matches(num_images):
 
 
 def reconstruct(images, x, y):
+    """
+    Reconstruct the entire image with a list of sub-images, and their x and y
+    coordinates.
+
+    :param images: list of sub-images.
+    :param x: list of x coordinates of images.
+    :param y: list of y coordinates of images.
+    :return: reconstructed entire image.
+    """
     dimension = images[0].shape[0]
     num_blocks = int(np.sqrt(len(images)))
     canvas_size = num_blocks * dimension
     canvas = np.zeros((canvas_size, canvas_size, 3), dtype=np.uint8)
 
-    for image, (x, y) in zip(images, zip(x.astype(np.int32), y.astype(np.int32))):
-        sx, sy, dx, dy = x * dimension, y * dimension, (x + 1) * dimension, (y + 1) * dimension
+    for image, (x, y) in zip(images, zip(x.astype(np.int32),
+                                         y.astype(np.int32))):
+        sx, sy, dx, dy = x * dimension, y * dimension, \
+                         (x + 1) * dimension, (y + 1) * dimension
         canvas[sy:dy, sx:dx] = image
     return canvas
 
