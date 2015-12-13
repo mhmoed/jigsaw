@@ -128,6 +128,22 @@ def compute_weights(pairwise_matches, mgc_distances):
 
 
 def compute_active_selection(pairwise_matches, mgc_distances):
+    """
+    Select a subset of best matches from the specified list of pairwise matches.
+
+    A best match for a given (i, j, o) in the list of pairwise matches, is
+    defined as that (i, j, o) tuple that minimises the MGC distance for that j.
+    In other words, for all matches in the list of pairwise matches, take that
+    match for which the match with this orientation minimises the MGC distance.
+
+    For details, see Yu et al. (2015), equation 14.
+    
+    :param pairwise_matches: list of (image index 1, image index 2, orientation)
+     tuples.
+    :param mgc_distances: dictionary of (image index 1, image index 2,
+    orientation) -> MGC distance items.
+    :return:
+    """
     def i_o_sorter((i, j, o)):
         return i, o
 
