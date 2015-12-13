@@ -157,9 +157,20 @@ def compute_active_selection(pairwise_matches, mgc_distances):
     return active_selection
 
 
-def initial_pairwise_matches(images):
-    num_images = len(images)
-    return list(product(range(num_images), range(num_images), range(4)))
+def initial_pairwise_matches(num_images):
+    """
+    Calculate initial pairwise matches for a given number of images. Initial
+    pairwise matches are all possible combinations of image 1, image 2, and
+    orientation. Given that the number of orientations is 4, and matches are
+    pairwise, the number of pairwise matches always equals 4 * n^2, where n
+    equals the number of images.
+
+    :param num_images: number of images in puzzle.
+    :return: initial pairwise matches, as a list of (image index 1, image index
+    2, orientation) tuples.
+    """
+    return list(product(range(num_images), range(num_images),
+                        range(NUM_ORIENTATIONS)))
 
 
 def reconstruct(images, x, y):
@@ -253,7 +264,7 @@ def get_rejected_matches(active_selection, x, y):
 def solve(images, maxiter=None):
     # Initialise to A^0, U^0 and x^0, y^0
 
-    pairwise_matches = initial_pairwise_matches(images)
+    pairwise_matches = initial_pairwise_matches(len(images))
     mgc_distances = compute_mgc_distances(images, pairwise_matches)
     weights = compute_weights(pairwise_matches, mgc_distances)
     active_selection = compute_active_selection(pairwise_matches, mgc_distances)
