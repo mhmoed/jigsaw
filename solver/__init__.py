@@ -56,6 +56,7 @@ def mgc(image1, image2, orientation):
     :param orientation: orientation image 1 relative to image 2.
     :param image1: first image.
     :param image2: second image.
+    :return MGC.
     """
     assert image1.shape == image2.shape, 'images must be of same dimensions'
     assert orientation in MGC_NUM_ROTATIONS, 'invalid orientation'
@@ -87,10 +88,34 @@ def mgc(image1, image2, orientation):
 
 
 def compute_mgc_distances(images, pairwise_matches):
-    return {(i, j, o): mgc(images[i], images[j], o) for i, j, o in pairwise_matches}
+    """
+    Compute MGC distances for all specified images and their pairwise matches.
+
+    :param images: list of images.
+    :param pairwise_matches: list of (image index 1, image index 2, orientation)
+     tuples.
+    :return: dictionary with tuples from pairwise_matches as keys, and their
+    resulting MGCs as values.
+    """
+    return {(i, j, o): mgc(images[i], images[j], o) for
+            i, j, o in pairwise_matches}
 
 
 def compute_weights(pairwise_matches, mgc_distances):
+    """
+    Compute weights for specified pairwise matches and their MGC distances.
+
+    A weight w_ijo is defined according to Yu et al. as the inverse
+    ratio between the MGC distance for w_ijo, D_ijo, and the best alternative
+    match for all k =/= i and k =/= j, for this orientation. For details
+
+    :param pairwise_matches: list of (image index 1, image index 2, orientation)
+      tuples.
+    :param mgc_distances: dictionary of (image index 1, image index 2,
+    orientation) -> MGC distance items.
+    :return: dictionary of weights, with tuples identical to those in
+    pairwise_matches, and their weights as values.
+    """
     num_images = max((i for i, _, _ in pairwise_matches)) + 1
     W = {}
     for i, j, o in pairwise_matches:
