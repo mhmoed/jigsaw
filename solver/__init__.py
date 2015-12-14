@@ -197,13 +197,31 @@ def reconstruct(images, x, y):
 
 
 def compute_solution(active_selection, weights, maxiter=None):
+    """
+    Compute the solution of a linear program (LP) given by the active selection
+    and weights lookup table.
+
+    An LP is constructed based on the current active selection and weights
+    lookup table. The objective function to be minimised is the sum of the
+    number of mismatches in the x direction, plus the number of mismatches in
+    the y direction. Mismatches are multiplied by their MGC distance.
+
+    For a detailed overview, see Yu et al. (2015), equation 16.
+
+    :param active_selection: list of (image index 1, image index 2,
+    orientation) tuples representing the current active selection.
+    :param weights: weights lookup table, as computed by compute_weights.
+    :param maxiter: maximum number of iterations of the simplex method.
+    :return: (x, y) tuple with x and y coordinates.
+    """
     def sorted_by_i_and_o(active_selection):
         return sorted(active_selection, key=lambda (i, _, o): (i, o))
 
     def row_index(i, o):
         return 8 * i + NUM_CONSTRAINTS * o
 
-    # Sort a by i and o. The resulting order allows for simplifications on A_ub
+    # Sort active selection by i and o. The resulting order allows for
+    # simplifications on the upper bound matrix A_ub.
 
     n = len(active_selection) / NUM_ORIENTATIONS
     sorted_a = sorted_by_i_and_o(active_selection)
@@ -226,7 +244,9 @@ def compute_solution(active_selection, weights, maxiter=None):
         Xj[r:r + 2, j] = [-1, 1]
     X = Xi + Xj
 
-    # Construct A_ub
+    # Construct A_ub by vertically and horizontally stacking its constituent
+    # matrices. Although pre-allocating the matrix and copying values may be
+    # more efficient, it makes for less readable code.
 
     h, w = H.shape
     Z_h = np.zeros((h, w), dtype=np.int32)
@@ -238,8 +258,10 @@ def compute_solution(active_selection, weights, maxiter=None):
 
     # Construct b_ub
 
-    b_x = list(chain.from_iterable([[DELTA_X[o], -DELTA_X[o]] for (_, _, o) in active_selection]))
-    b_y = list(chain.from_iterable([[DELTA_Y[o], -DELTA_Y[o]] for (_, _, o) in active_selection]))
+    b_x = list(chain.from_iterable([[DELTA_X[o], -DELTA_X[o]]
+                                    for (_, _, o) in sorted_a]))
+    b_y = list(chain.from_iterable([[DELTA_Y[o], -DELTA_Y[o]]
+                                    for (_, _, o) in sorted_a]))
     b_ub = np.array(b_x + b_y)
 
     # Construct c
@@ -254,9 +276,11 @@ def compute_solution(active_selection, weights, maxiter=None):
 
     if not solution.success:
         if solution.message == 'Iteration limit reached.':
-            raise ValueError('iteration limit reached, try increasing the number of max iterations')
+            raise ValueError('iteration limit reached, try increasing the ' +
+                             'number of max iterations')
         else:
-            raise ValueError('unable to find solution to LP: {}'.format(solution.message))
+            raise ValueError('unable to find solution to LP: {}'.format(
+                solution.message))
 
     xy = solution.x[-n * 2:]
     return xy[:n], xy[n:]
