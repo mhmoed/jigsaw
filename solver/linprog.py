@@ -9,6 +9,7 @@ References:
     Conference on (pp. 382-389). IEEE.
 """
 from itertools import chain, groupby
+import random
 
 import numpy as np
 from scipy.optimize import linprog
@@ -184,7 +185,10 @@ def compute_rejected_matches(active_selection, x, y):
     return rejected_matches
 
 
-def solve(images, maxiter=None):
+def solve(images, maxiter=None, random_seed=None):
+    if random_seed:
+        random.seed(random_seed)
+
     # Initialise to A^0, U^0 and x^0, y^0
 
     pairwise_matches = slv.initial_pairwise_matches(len(images))
