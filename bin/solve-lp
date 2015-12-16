@@ -8,9 +8,10 @@ import solver as slv
 @click.argument('output', type=click.Path())
 @click.option('-n', '--num-pieces', type=int, default=16)
 @click.option('-m', '--max-iter', type=int, default=1000)
-def solve_lp(input, output, num_pieces, max_iter):
+@click.option('-r', '--random-seed', type=int, default=None)
+def solve_lp(input, output, num_pieces, max_iter, random_seed):
     images = slv.subdivide_image(slv.load_image(input), num_pieces)
-    x, y = slv.solve_lp(images, max_iter)
+    x, y = slv.solve_lp(images, max_iter, random_seed=random_seed)
     slv.save_image(output, slv.reconstruct(images, x, y))
 
 
