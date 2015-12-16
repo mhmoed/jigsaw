@@ -8,93 +8,17 @@ References:
     orientation. In Computer Vision and Pattern Recognition (CVPR), 2012 IEEE
     Conference on (pp. 382-389). IEEE.
 """
-from itertools import product, groupby
+from itertools import chain, groupby
 
 import numpy as np
-
-from itertools import chain
-
-from scipy.spatial.distance import mahalanobis
 from scipy.optimize import linprog
 
+import solver as slv
 
 NUM_CONSTRAINTS = 2
 MATCH_REJECTION_THRESHOLD = 10e-5
-MGC_NUM_ROTATIONS = [3, 0, 1, 2]
-NUM_ORIENTATIONS = len(MGC_NUM_ROTATIONS)
 DELTA_X = [0, -1, 0, 1]
 DELTA_Y = [1, 0, -1, 0]
-
-
-def mgc(image1, image2, orientation):
-    """
-    Calculate the Mahalanobis Gradient Compatibility (MGC) of image 1 relative
-    to image 2. MGC provides a measure of the similarity in gradient
-    distributions between the boundaries of adjoining images with respect to
-    a particular orientation. For detailed information on the underlying,
-    please see Gallagher et al. (2012).
-
-    Orientations are integers, defined according to Yu et al. (2015):
-    - 0: measure MGC between the top of image 1 and bottom of image 2;
-    - 1: measure MGC between the right of image 1 and left of image 2;
-    - 2: measure MGC between the bottom of image 1 and top of image 2;
-    - 3: measure MGC between the left of image 1 and right of image 2;
-
-    Both images are first rotated into position according to the specified
-    orientations, such that the right side of image 1 and the left side of
-    image 2 are the boundaries of interest. This preprocessing step simplifies
-    the subsequent calculation of the MGC, but increases computation time.
-    Therefore, a straightforward optimisation would be to extract boundary
-    sequences directly.
-
-    NOTE: nomenclature taken from Gallagher et al. (2012).
-
-    :param orientation: orientation image 1 relative to image 2.
-    :param image1: first image.
-    :param image2: second image.
-    :return MGC.
-    """
-    assert image1.shape == image2.shape, 'images must be of same dimensions'
-    assert orientation in MGC_NUM_ROTATIONS, 'invalid orientation'
-
-    num_rotations = MGC_NUM_ROTATIONS[orientation]
-
-    # Rotate images based on orientation - this is easier than extracting
-    # the sequences based on an orientation case switch
-
-    image1_signed = np.rot90(image1, num_rotations).astype(np.int16)
-    image2_signed = np.rot90(image2, num_rotations).astype(np.int16)
-
-    # Get mean gradient of image1
-
-    g_i_l = image1_signed[:, -1] - image1_signed[:, -2]
-    mu = g_i_l.mean(axis=0)
-
-    # Get covariance matrix S
-    # Small values are added to the diagonal of S to resolve non-invertibility
-    # of S. This will not influence the final result.
-
-    s = np.cov(g_i_l.T) + np.eye(3) * 10e-6
-
-    # Get G_ij_LR
-
-    g_ij_lr = image2_signed[:, 1] - image1_signed[:, -1]
-
-    return sum(mahalanobis(row, mu, np.linalg.inv(s)) for row in g_ij_lr)
-
-
-def compute_mgc_distances(images, pairwise_matches):
-    """
-    Compute MGC distances for all specified images and their pairwise matches.
-
-    :param images: list of images.
-    :param pairwise_matches: list of (image index 1, image index 2, orientation)
-     tuples.
-    :return: dictionary with tuples from pairwise_matches as keys, and their
-    resulting MGCs as values.
-    """
-    return {(i, j, o): mgc(images[i], images[j], o) for
-            i, j, o in pairwise_matches}
 
 
 def compute_weights(pairwise_matches, mgc_distances):
@@ -153,22 +77,6 @@ def compute_active_selection(pairwise_matches, mgc_distances):
     return active_selection
 
 
-def initial_pairwise_matches(num_images):
-    """
-    Calculate initial pairwise matches for a given number of images. Initial
-    pairwise matches are all possible combinations of image 1, image 2, and
-    orientation. Given that the number of orientations is 4, and matches are
-    pairwise, the number of pairwise matches always equals 4 * n^2, where n
-    equals the number of images.
-
-    :param num_images: number of images in puzzle.
-    :return: initial pairwise matches, as a list of (image index 1, image index
-    2, orientation) tuples.
-    """
-    return list(product(range(num_images), range(num_images),
-                        range(NUM_ORIENTATIONS)))
-
-
 def compute_solution(active_selection, weights, maxiter=None):
     """
     Compute the solution of a linear program (LP) given by the active selection
@@ -196,7 +104,7 @@ def compute_solution(active_selection, weights, maxiter=None):
     # Sort active selection by i and o. The resulting order allows for
     # simplifications on the upper bound matrix A_ub.
 
-    n = len(active_selection) / NUM_ORIENTATIONS
+    n = len(active_selection) / slv.MGC_NUM_ORIENTATIONS
     sorted_a = sorted_by_i_and_o(active_selection)
 
     # Construct A_ub, given as follows:
@@ -204,12 +112,19 @@ def compute_solution(active_selection, weights, maxiter=None):
     #           | 0  | H2 | Y |,
     # and where X = Y and H1 = H2 (constraints are identical for X and Y).
 
-    h_base = np.array([-1] * NUM_CONSTRAINTS + [0] * (NUM_ORIENTATIONS * NUM_CONSTRAINTS * n - NUM_CONSTRAINTS))
-    H = np.array([np.roll(h_base, k) for k in range(0, NUM_ORIENTATIONS * NUM_CONSTRAINTS * n, NUM_CONSTRAINTS)]).T
+    h_base = np.array([-1] * NUM_CONSTRAINTS + [0] * (slv.MGC_NUM_ORIENTATIONS *
+                                                      NUM_CONSTRAINTS *
+                                                      n - NUM_CONSTRAINTS))
+    H = np.array([np.roll(h_base, k) for k in range(0,
+                                                    slv.MGC_NUM_ORIENTATIONS *
+                                                    NUM_CONSTRAINTS * n,
+                                                    NUM_CONSTRAINTS)]).T
 
-    xi_base = np.array([1, -1] * NUM_ORIENTATIONS + [0] * (NUM_ORIENTATIONS * NUM_CONSTRAINTS) * (n - 1))
+    xi_base = np.array([1, -1] * slv.MGC_NUM_ORIENTATIONS + [0] *
+                       (slv.MGC_NUM_ORIENTATIONS * NUM_CONSTRAINTS) * (n - 1))
     Xi = np.array([np.roll(xi_base, k) for k in
-                   range(0, NUM_ORIENTATIONS * NUM_CONSTRAINTS * n, NUM_CONSTRAINTS * NUM_ORIENTATIONS)]).T
+                   range(0, slv.MGC_NUM_ORIENTATIONS * NUM_CONSTRAINTS * n,
+                         NUM_CONSTRAINTS * slv.MGC_NUM_ORIENTATIONS)]).T
 
     Xj = np.zeros(Xi.shape, dtype=np.int32)
     for i, j, o in sorted_a:
@@ -259,7 +174,7 @@ def compute_solution(active_selection, weights, maxiter=None):
     return xy[:n], xy[n:]
 
 
-def get_rejected_matches(active_selection, x, y):
+def compute_rejected_matches(active_selection, x, y):
     rejected_matches = set()
     for i, j, o in active_selection:
         if abs(x[i] - x[j] - DELTA_X[o]) > MATCH_REJECTION_THRESHOLD:
@@ -272,8 +187,8 @@ def get_rejected_matches(active_selection, x, y):
 def solve(images, maxiter=None):
     # Initialise to A^0, U^0 and x^0, y^0
 
-    pairwise_matches = initial_pairwise_matches(len(images))
-    mgc_distances = compute_mgc_distances(images, pairwise_matches)
+    pairwise_matches = slv.initial_pairwise_matches(len(images))
+    mgc_distances = slv.compute_mgc_distances(images, pairwise_matches)
     weights = compute_weights(pairwise_matches, mgc_distances)
     active_selection = compute_active_selection(pairwise_matches, mgc_distances)
     x, y = compute_solution(active_selection, weights, maxiter)
@@ -283,7 +198,7 @@ def solve(images, maxiter=None):
     old_x, old_y = None, None
 
     while (old_x is None and old_y is None) or not (np.array_equal(old_x, x) and np.array_equal(old_y, y)):
-        rejected_matches = get_rejected_matches(active_selection, x, y)
+        rejected_matches = compute_rejected_matches(active_selection, x, y)
         pairwise_matches = list(set(pairwise_matches) - rejected_matches)
         active_selection = compute_active_selection(pairwise_matches, mgc_distances)
 
