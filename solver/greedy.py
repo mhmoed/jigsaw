@@ -1,3 +1,12 @@
+"""
+Solves a jigsaw puzzle using greedy matching based on Mahalanobis Gradient
+Compatibility (MGC) distances between pieces.
+
+Pairwise distances between pieces are calculated for all four orientations
+using MGC. The algorithm is initialised with a random piece. Then, the best
+matching piece is selected for all open tiles next to all existing pieces, and
+placed accordingly. This process is repeated until no pieces are left to assign.
+"""
 import random
 from itertools import product
 
@@ -7,6 +16,14 @@ import solver as slv
 
 
 def solve(images, random_seed=None):
+    """
+    Solve a jigsaw puzzle greedily.
+
+    :param images: a list of images.
+    :param random_seed: random seed to initialise with, or None if default.
+    :return: an (x, y) tuple, where x and y are both of length |images|, with
+    the x and y coordinates of each image.
+    """
     if random_seed:
         random.seed(random_seed)
 
@@ -71,6 +88,13 @@ def solve(images, random_seed=None):
 
 
 def trimmed_canvas(canvas):
+    """
+    Trim a canvas to its smallest form. In most cases, rows and columns of the
+    canvas will be unused (i.e. filled with only -1's). These rows and columns
+    are removed, until a solution is left with pieces arranged contiguously.
+    :param canvas:
+    :return:
+    """
     dimension, _ = canvas.shape
     mask = canvas == -1
     row_filter = list(np.all(mask, axis=1))
