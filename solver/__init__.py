@@ -25,7 +25,11 @@ def subdivide_image(image, num_pieces):
 
 
 def load_image(filename):
-    return io.imread(filename)
+    image = io.imread(filename)
+    _, _, num_colour_channels = image.shape
+    if num_colour_channels > 3:
+        return image[:, :, :3]
+    return image
 
 
 def save_image(filename, array):
@@ -47,8 +51,10 @@ def reconstruct(images, x, y):
     canvas_size = num_blocks * dimension
     canvas = np.zeros((canvas_size, canvas_size, 3), dtype=np.uint8)
 
-    for image, (x, y) in zip(images, zip(x.astype(np.int32),
-                                         y.astype(np.int32))):
+    xs = np.array(x, dtype=np.int32)
+    ys = np.array(y, dtype=np.int32)
+
+    for image, (x, y) in zip(images, zip(xs, ys)):
         sx, sy, dx, dy = x * dimension, y * dimension, \
                          (x + 1) * dimension, (y + 1) * dimension
         canvas[sy:dy, sx:dx] = image
