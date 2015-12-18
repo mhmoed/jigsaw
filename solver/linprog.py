@@ -176,6 +176,19 @@ def compute_solution(active_selection, weights, maxiter=None):
 
 
 def compute_rejected_matches(active_selection, x, y):
+    """
+    Compute rejected matches given the active selection and the solution to the
+    linear program given by the x and y coordinates of all pieces.
+
+    For details, see Yu et al. (2015), equation 17.
+
+    :param active_selection: list of (image index 1, image index 2,
+    orientation) tuples representing the current active selection.
+    :param x: x-coordinates of all pieces.
+    :param y: y-coordinates of all pieces.
+    :return: list of (image index 1, image index 2, orientation) tuples taken
+    from the active selection, representing all rejected matches.
+    """
     rejected_matches = set()
     for i, j, o in active_selection:
         if abs(x[i] - x[j] - DELTA_X[o]) > MATCH_REJECTION_THRESHOLD:
@@ -186,6 +199,17 @@ def compute_rejected_matches(active_selection, x, y):
 
 
 def solve(images, maxiter=None, random_seed=None):
+    """
+    Solve a jigsaw puzzle using linear programming.
+
+    :param images: a list of images.
+    :param maxiter: maximum number of iterations for scipy's linprog method.
+    A larger number of images requires a larger number of iterations.
+    :param random_seed: random seed with which to initialise the linear
+    programming solution.
+    :return: a 2-tuple containing the x- and y -coordinates of each piece in
+    the final image.
+    """
     if random_seed:
         random.seed(random_seed)
 
