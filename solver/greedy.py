@@ -92,8 +92,8 @@ def trimmed_canvas(canvas):
     Trim a canvas to its smallest form. In most cases, rows and columns of the
     canvas will be unused (i.e. filled with only -1's). These rows and columns
     are removed, until a solution is left with pieces arranged contiguously.
-    :param canvas:
-    :return:
+    :param canvas: complete canvas.
+    :return: canvas with rows and columns trimmed to maximum extent.
     """
     dimension, _ = canvas.shape
     mask = canvas == -1
@@ -108,6 +108,12 @@ def trimmed_canvas(canvas):
 
 
 def canvas_to_xy(canvas):
+    """
+    Convert canvas to x- and y-coordinates for each piece.
+
+    :param canvas: complete canvas.
+    :return: (x, y) tuple with x- and y-coordinates of pieces, resp.
+    """
     num_images = len(canvas) ** 2
 
     x, y = [0] * num_images, [0] * num_images
@@ -120,6 +126,14 @@ def canvas_to_xy(canvas):
 
 
 def compute_open_boundaries(canvas):
+    """
+    Return all open boundaries in canvas. An open boundary is an open tile next
+    to a tile occupied by a piece, and is defined as a (x, y, o, i)-tuple,
+    where x and y are the x- and y-coordinates of the occupied tile, o the
+    orientation of piece i with respect to the occupied tile.
+    :param canvas: complete canvas.
+    :return: list of open boundaries.
+    """
     def filled(element):
         return element != -1
 
