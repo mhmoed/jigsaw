@@ -6,9 +6,12 @@ import jigsaw as jgs
 @click.command()
 @click.argument('input', type=click.Path(exists=True))
 @click.argument('output', type=click.Path())
-@click.option('-n', '--num-pieces', type=int, default=16)
-@click.option('-m', '--max-iter', type=int, default=1000)
-@click.option('-r', '--random-seed', type=int, default=None)
+@click.option('-n', '--num-pieces', type=int, default=16, help=
+              'number of pieces in input image')
+@click.option('-m', '--max-iter', type=int, default=1000, help=
+              'maximum number of iterations for simplex method')
+@click.option('-r', '--random-seed', type=int, default=None, help=
+              'random seed to initialise LP algorithm with')
 def solve_lp(input, output, num_pieces, max_iter, random_seed):
     images = jgs.subdivide_image(jgs.load_image(input), num_pieces)
     x, y = jgs.solve_lp(images, max_iter, random_seed=random_seed)

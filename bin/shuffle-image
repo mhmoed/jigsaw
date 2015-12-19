@@ -10,8 +10,10 @@ import jigsaw as jgs
 @click.command()
 @click.argument('input', type=click.Path(exists=True))
 @click.argument('output', type=click.Path())
-@click.option('-n', '--num-pieces', type=int, default=16)
-@click.option('-r', '--random-seed', type=int, default=None)
+@click.option('-n', '--num-pieces', type=int, default=16, help=
+              'number of pieces in image')
+@click.option('-r', '--random-seed', type=int, default=None, help=
+              'random seed to shuffle images with')
 def shuffle_image(input, output, num_pieces, random_seed):
     image = jgs.load_image(input)
     height, width, _ = image.shape
