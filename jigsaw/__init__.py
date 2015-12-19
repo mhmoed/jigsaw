@@ -1,3 +1,8 @@
+"""
+This file contains general functionality not directly related to the LP-based
+algorithm, such as image manipulation methods and Mahalanobis Gradient
+Compatibility computation.
+"""
 from itertools import product
 import math
 
@@ -12,6 +17,14 @@ MGC_NUM_ORIENTATIONS = len(MGC_NUM_ROTATIONS)
 
 
 def subdivide_image(image, num_pieces):
+    """
+    Subdivide an image into the given number of pieces. The image must be
+    square, and its dimensions divisible by the number of pieces.
+
+    :param image: image to subdivide.
+    :param num_pieces: number of pieces to subdivide image into.
+    :return: list of subimages.
+    """
     h, w, _ = image.shape
     if h != w:
         raise ValueError('image is not square')
@@ -24,6 +37,14 @@ def subdivide_image(image, num_pieces):
 
 
 def load_image(filename):
+    """
+    Load image and strip any colour channels other than RGB.
+
+    This method uses scikit-images's io functionality under the hood.
+
+    :param filename: filename of file to load.
+    :return: loaded image.
+    """
     image = io.imread(filename)
     _, _, num_colour_channels = image.shape
     if num_colour_channels > 3:
@@ -32,6 +53,12 @@ def load_image(filename):
 
 
 def save_image(filename, array):
+    """
+    Save image to a file.
+
+    :param filename: filename of output file.
+    :param array: numpy array to save as an image.
+    """
     io.imsave(filename, array)
 
 
