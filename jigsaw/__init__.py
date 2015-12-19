@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from linprog import solve as solve_lp
-from greedy import solve as solve_greedy
 from scipy.spatial.distance import mahalanobis
 
 MGC_NUM_ROTATIONS = [3, 0, 1, 2]
