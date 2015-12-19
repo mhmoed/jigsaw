@@ -49,7 +49,7 @@ import random
 import numpy as np
 from scipy.optimize import linprog
 
-import solver as slv
+import jigsaw as slv
 
 NUM_CONSTRAINTS = 2
 MATCH_REJECTION_THRESHOLD = 10e-5

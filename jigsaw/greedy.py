@@ -12,7 +12,7 @@ from itertools import product
 
 import numpy as np
 
-import solver as slv
+import jigsaw as slv
 
 
 def solve(images, random_seed=None):
