@@ -15,9 +15,10 @@ def subdivide_image(image, num_pieces):
     h, w, _ = image.shape
     if h != w:
         raise ValueError('image is not square')
-    if h % num_pieces:
+    num_blocks_per_dimension = int(math.sqrt(num_pieces))
+    if h % num_blocks_per_dimension:
         raise ValueError('block size is not an integer')
-    block_size = h / int(math.sqrt(num_pieces))
+    block_size = h / num_blocks_per_dimension
     block_itr = product(range(0, h, block_size), range(0, h, block_size))
     return [image[y:y + block_size, x:x + block_size] for y, x in block_itr]
 
