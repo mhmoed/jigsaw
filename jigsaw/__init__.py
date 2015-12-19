@@ -2,7 +2,6 @@ from itertools import product
 import math
 
 import skimage.io as io
-import matplotlib.pyplot as plt
 import numpy as np
 
 from linprog import solve as solve_lp
@@ -32,7 +31,7 @@ def load_image(filename):
 
 
 def save_image(filename, array):
-    plt.imsave(filename, array)
+    io.imsave(filename, array)
 
 
 def reconstruct(images, x, y):
