@@ -4,7 +4,7 @@ from itertools import product
 from math import sqrt
 
 import click as click
-import solver as slv
+import jigsaw as jgs
 
 
 @click.command()
@@ -13,12 +13,12 @@ import solver as slv
 @click.option('-n', '--num-pieces', type=int, default=16)
 @click.option('-r', '--random-seed', type=int, default=None)
 def shuffle_image(input, output, num_pieces, random_seed):
-    image = slv.load_image(input)
+    image = jgs.load_image(input)
     height, width, _ = image.shape
     if height != width:
         raise ValueError('input image must be square')
 
-    images = slv.subdivide_image(image, num_pieces)
+    images = jgs.subdivide_image(image, num_pieces)
     dimension = int(sqrt(num_pieces))
     coordinates = list(product(range(dimension), range(dimension)))
 
@@ -29,7 +29,7 @@ def shuffle_image(input, output, num_pieces, random_seed):
     x = [x for (x, _) in coordinates]
     y = [y for (_, y) in coordinates]
 
-    slv.save_image(output, slv.reconstruct(images, x, y))
+    jgs.save_image(output, jgs.reconstruct(images, x, y))
 
 
 if __name__ == '__main__':

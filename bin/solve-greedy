@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import click as click
-import solver as slv
+import jigsaw as jgs
 
 
 @click.command()
@@ -9,9 +9,9 @@ import solver as slv
 @click.option('-n', '--num-pieces', type=int, default=16)
 @click.option('-r', '--random-seed', type=int, default=None)
 def solve_greedy(input, output, num_pieces, random_seed):
-    images = slv.subdivide_image(slv.load_image(input), num_pieces)
-    x, y = slv.solve_greedy(images, random_seed=random_seed)
-    slv.save_image(output, slv.reconstruct(images, x, y))
+    images = jgs.subdivide_image(jgs.load_image(input), num_pieces)
+    canvas = jgs.solve_greedy(images, random_seed=random_seed)
+    jgs.save_image(output, jgs.reconstruct(images, canvas))
 
 
 if __name__ == '__main__':
