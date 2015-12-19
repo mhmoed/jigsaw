@@ -6,7 +6,7 @@ puzzle problems.
 The solver based on linear programming is implemented from the paper by 
 Yu et al. (2015). This package implements the 'free' strategy and can only 
 solve Type I problems (i.e. problems where the orientation of the pieces is 
-known). For details about the method, please see [LP](LP.md).
+known).
 
 ## Greedy solver
 The greedy solver implements a straightforward algorithm where, starting from a 
