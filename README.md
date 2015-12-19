@@ -16,7 +16,8 @@ and shuffle them, use:
 To reconstruct the shuffled image with the LP-based algorithm, use:
 
 <pre>
-    solve-jigsaw-lp shuffled.png reconstructed.png [-n <i>number of pieces</i>] [-r <i>random seed</i>] [-m <i>max. number of simplex iterations</i>]
+    solve-jigsaw-lp shuffled.png reconstructed.png [-n <i>number of pieces</i>] 
+        [-r <i>random seed</i>] [-m <i>max. number of simplex iterations</i>]
 </pre>
 
 
